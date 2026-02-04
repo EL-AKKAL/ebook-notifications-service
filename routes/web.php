@@ -10,6 +10,7 @@ Route::get('/', function () {
             '/notifications' => 'Get all notifications',
             '/notifications/{id}/read' => 'Mark a notification as read',
             '/notifications/read-all' => 'Mark all notifications as read',
-        ]
+        ],
+        'pipeline' => 'CI/CD pipeline is set up for automated deployments.',
     ]);
 });
