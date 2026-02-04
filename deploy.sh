@@ -11,6 +11,6 @@ php artisan migrate --force
 # php artisan optimize:
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
+# php artisan view:cache
 
 sudo systemctl reload php8.3-fpm
