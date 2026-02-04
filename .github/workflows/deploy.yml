@@ -1,0 +1,24 @@
+name: Deploy to VPS
+
+on:
+ push:
+ branches: [ main ]
+
+jobs:
+ deploy:
+ runs-on: ubuntu-latest
+
+ steps:
+ - name: Checkout code
+ uses: actions/checkout@v4
+
+ - name: Setup SSH
+ run: |
+ mkdir -p ~/.ssh
+ echo "${{ secrets.CI_DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+ chmod 600 ~/.ssh/id_ed25519
+ printf "Host vps\n HostName 72.61.105.215\n User root\n IdentityFile ~/.ssh/id_ed25519\n StrictHostKeyChecking no\n" >> ~/.ssh/config
+
+ - name: Deploy on VPS
+ run: |
+ ssh vps "cd /var/www/ebook-notifications-service && bash deploy.sh"
