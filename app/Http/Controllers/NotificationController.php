@@ -11,13 +11,11 @@ class NotificationController extends Controller
     {
         $userId = $request->user_id;
 
-        $notifications = Notification::where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
+        $notifications = Notification::forUser($userId)
+            ->latestFirst()
             ->get();
 
-        $unreadCount = Notification::where('user_id', $userId)
-            ->whereNull('read_at')
-            ->count();
+        $unreadCount = $notifications->whereNull('read_at')->count();
 
         return response()->json([
             'notifications' => $notifications,
@@ -28,26 +26,21 @@ class NotificationController extends Controller
 
     public function read(Request $request, $id)
     {
-        $userId = $request->user_id;
+        $notification = Notification::forUser($request->user_id)
+            ->findOrFail($id);
 
-        $notification = Notification::where('id', $id)
-            ->where('user_id', $userId)
-            ->firstOrFail();
+        $notification->markAsRead();
 
-        $notification->update(['read_at' => now()]);
-
-        return response()->json(['message' => 'Notification marked as read']);
+        return response()->json([
+            'message' => 'Notification marked as read',
+        ]);
     }
 
     public function readAll(Request $request)
     {
-        $userId = $request->user_id;
-
-        Notification::where('user_id', $userId)
-            ->whereNull('read_at')
-            ->update([
-                'read_at' => now(),
-            ]);
+        Notification::forUser($request->user_id)
+            ->unread()
+            ->markAsRead();
 
         return response()->json([
             'message' => 'All notifications marked as read',
@@ -56,12 +49,9 @@ class NotificationController extends Controller
 
     public function unreadAll(Request $request)
     {
-        $userId = $request->user_id;
-
-        Notification::where('user_id', $userId)
-            ->update([
-                'read_at' => null,
-            ]);
+        Notification::forUser($request->user_id)
+            ->read()
+            ->markAsUnread();
 
         return response()->json([
             'message' => 'All notifications marked as unread',
