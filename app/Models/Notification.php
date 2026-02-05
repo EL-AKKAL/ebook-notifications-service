@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\NotificationTypeEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,14 +22,27 @@ class Notification extends Model
     ];
     protected $casts = [
         'read_at' => 'datetime',
+        'type' => NotificationTypeEnum::class,
     ];
 
-    protected $appends = ['is_read'];
+    protected $appends = ['is_read', 'type_object'];
 
     protected function isRead(): Attribute
     {
         return Attribute::make(
             get: fn() => $this->read_at !== null
+        );
+    }
+
+    protected function typeObject(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->type
+            ? [
+                'value' => $this->type->value,
+                'label' => $this->type->label(),
+            ]
+            : null
         );
     }
 
