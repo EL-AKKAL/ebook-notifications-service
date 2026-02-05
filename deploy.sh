@@ -8,11 +8,13 @@ composer install --no-dev --optimize-autoloader
 
 php artisan migrate --force
 
-# php artisan optimize:
-php artisan config:clear
-php artisan route:clear
+php artisan optimize:
 php artisan config:cache
 php artisan route:cache
-# php artisan view:cache
 
 sudo systemctl reload php8.3-fpm
+
+supervisorctl reread
+supervisorctl update
+supervisorctl restart ebook-notifications-queue
+supervisorctl restart ebook-notifications-listener
