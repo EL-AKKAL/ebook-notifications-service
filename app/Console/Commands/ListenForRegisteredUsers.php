@@ -14,12 +14,23 @@ class ListenForRegisteredUsers extends Command
     public function handle()
     {
         $config = config('queue.connections.rabbitmq.hosts')[0];
+        $options = config('queue.connections.rabbitmq.options');
+
         $connection = new AMQPStreamConnection(
             $config['host'],
             $config['port'],
             $config['user'],
-            env('RABBITMQ_PASSWORD'),
-            $config['vhost']
+            $config['password'] ?? env('RABBITMQ_PASSWORD', 'guest'),
+            $config['vhost'],
+            false,
+            $options['login_method'] ?? 'AMQPLAIN',
+            null,
+            'en_US',
+            3.0,
+            $options['read_write_timeout'] ?? 10,
+            null,
+            false,
+            $options['heartbeat'] ?? 60
         );
 
         $channel = $connection->channel();
