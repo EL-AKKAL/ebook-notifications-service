@@ -38,6 +38,10 @@ return [
         'rabbitmq' => [
 
             'driver' => 'rabbitmq',
+
+            'queue' => env('RABBITMQ_QUEUE', 'default'),
+            'connection' => env('RABBITMQ_CONNECTION', 'default'),
+
             'hosts' => [
                 [
                     'host' => env('RABBITMQ_HOST', '127.0.0.1'),
@@ -47,13 +51,20 @@ return [
                     'vhost' => env('RABBITMQ_VHOST', '/'),
                 ],
             ],
+
             'options' => [
-                'queue' => [
-                    'prioritize_delayed' => false,
-                    'queue_max_priority' => 10,
+                'ssl_options' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
                 ],
+                'login_method' => env('RABBITMQ_LOGIN_METHOD', 'AMQPLAIN'),
+                'heartbeat' => 60,
+                'read_write_timeout' => 10,
             ],
+
+            'worker' => env('RABBITMQ_WORKER', 'default'),
         ],
+
         'database' => [
             'driver' => 'database',
             'connection' => env('DB_QUEUE_CONNECTION'),
