@@ -25,7 +25,13 @@ class VerifyJWT
 
 
         try {
-            $decoded = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
+            $key = env('JWT_SECRET') ?? config('jwt.secret');
+
+            if (!is_string($key) || $key === '')
+                abort(500, 'JWT key not configured.');
+
+            $decoded = JWT::decode($token, new Key($key, 'HS256'));
+
             $request->merge(['user_id' => $decoded->sub]);
 
         } catch (Exception $e) {
