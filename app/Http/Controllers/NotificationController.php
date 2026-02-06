@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\NotificationResource;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 
@@ -10,12 +11,16 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $id = $request->user_id;
+        $perPage = $request->integer('perPage', 5);
 
-        return response()->json([
-            'notifications' => Notification::forUser($id)->latest()->get(),
-            'unread_count' => Notification::forUser($id)->unread()->count(),
-            'user_id' => $id
-        ]);
+        $query = Notification::forUser($id);
+
+        $notifications = $query->latest('id')->cursorPaginate($perPage);
+
+        $unreadCount = (clone $query)->unread()->count();
+
+        return NotificationResource::collection($notifications)
+            ->additional(['unread_count' => $unreadCount]);
     }
 
     public function read(Request $request, $id)
