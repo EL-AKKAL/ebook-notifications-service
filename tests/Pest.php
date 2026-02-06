@@ -12,7 +12,7 @@
 */
 
 pest()->extend(Tests\TestCase::class)
- // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -30,6 +30,11 @@ expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 
+expect()->extend('toBeUnauthorized', function () {
+    return $this->toBe(401);
+});
+
+
 /*
 |--------------------------------------------------------------------------
 | Functions
@@ -45,3 +50,6 @@ function something()
 {
     // ..
 }
+
+require_once __DIR__ . '/Support/JwtTestHelper.php';
+require_once __DIR__ . '/Support/NotificationsSeedHelper.php';

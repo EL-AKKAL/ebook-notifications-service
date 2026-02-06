@@ -14,6 +14,8 @@ class NotificationFactory extends Factory
             'title' => $this->faker->sentence(),
             'message' => $this->faker->sentence(),
             'read_at' => null,
+            'user_name' => $this->faker->name(),
+            'user_email' => $this->faker->safeEmail(),
         ];
     }
 }
