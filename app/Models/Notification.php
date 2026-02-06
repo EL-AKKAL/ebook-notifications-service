@@ -25,6 +25,8 @@ class Notification extends Model
         'type' => NotificationTypeEnum::class,
     ];
 
+    protected $hidden = ['type'];
+
     protected $appends = ['is_read', 'type_object'];
 
     protected function isRead(): Attribute
