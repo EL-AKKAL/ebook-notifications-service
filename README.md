@@ -1,59 +1,162 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## About Project
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project is a dedicated Notifications Microservice. It is designed to handle user notifications independently from authentication and core user services, following a scalable microservices architecture.
 
-## About Laravel
+The service is responsible for receiving, retrieving, updating, and managing notification states (read/unread) while enforcing strict user-level data isolation using JWT-based identity propagation.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [see api endpoints here](https://ebook-notifications-service.elakkalayoub.cloud/).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation & Usage
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Requirements
 
-## Learning Laravel
+- PHP 8.2+
+- Composer
+- MySQL (or SQLite for testing)
+- Node.js (for frontend)
+- Git
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Clone the Repository
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```
+git clone https://github.com/EL-AKKAL/ebook-notifications-service.git
+cd ebook-notifications-service
+```
 
-## Laravel Sponsors
+### Install Dependencies
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```
+composer install
+```
 
-### Premium Partners
+### Environment Setup
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```
+cp .env.example .env
+```
 
-## Contributing
+Then configure the environment variables below with the appropriate credentials.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- this includes jwt config , rabbitmq config , pusher config
 
-## Code of Conduct
+```
+# pusher configs for broadcasting notifications
+PUSHER_APP_ID="your-pusher-app-id"
+PUSHER_APP_KEY="your-pusher-key"
+PUSHER_APP_SECRET="your-pusher-secret"
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME="https"
+PUSHER_APP_CLUSTER="mt1"
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# switch to pusher
+BROADCAST_CONNECTION=log
 
-## Security Vulnerabilities
+# switch to rabbitmq to connect with other micros
+QUEUE_CONNECTION=database
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# same jwt settings as authentication service
+JWT_SECRET=
 
-## License
+#rabbitmq config / see config/queue
+RABBITMQ_HOST=127.0.0.1
+RABBITMQ_PORT=5672
+RABBITMQ_USER=guest
+RABBITMQ_PASSWORD=guest
+RABBITMQ_VHOST=/
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Generate the application key:
+
+```
+php artisan key:generate
+```
+
+dont forget to configure your database connection.
+
+Run migrations:
+
+```
+php artisan migrate
+```
+
+for test purposes you can run this custom command:
+
+```
+php artisan app:generate-notifications
+
+possible parameters :
+# user id exists in the auth table outside this service (you decide)
+# notifications number
+```
+
+### Run the Server
+
+```
+php artisan serve
+
+#note : save the url u see in terminal , you gonna use it for front-end.
+```
+
+### Run queue
+
+```
+php artisan queue:listen
+```
+
+### Run rabbitmq custom command
+
+```
+php artisan app:listen-registered-users
+
+# this command will listen to any published new user
+In production, RabbitMQ is the primary event source.
+Pusher is currently used for real-time UI updates, but duplicate events are expected during transition. This behavior is temporary.
+```
+
+## Architecture Principles
+
+- Microservice-first architecture — no user model, no auth system, only trusted JWT identity
+- Separation of concerns — API logic, domain logic, persistence, and middleware clearly separated
+- Security by design — user access validated via JWT middleware
+- Test-driven mindset — full Pest Feature Test coverage for API behavior
+- CI-ready — automated test execution before deployment
+- Frontend-ready API — enriched response structure (computed attributes, enums, UI-ready metadata)
+
+## Notification Domain Features
+
+- Cursor-paginated notification listing
+- Read / unread status tracking
+- Read-all / unread-all actions
+- User-scoped query filtering
+- Enum-backed notification types with API-friendly label mapping
+- Hidden internal fields with computed UI-safe output
+- Safe ownership enforcement (users cannot access others’ notifications)
+
+### Testing Strategy (PestPHP)
+
+The project includes Feature-level API tests that validate:
+
+- Authorized vs unauthorized access
+- Correct user-scoped data retrieval
+- State transitions (read/unread)
+- Cross-user access protection
+- JWT-required route enforcement
+
+A reusable test helper layer provides:
+
+- Token generation
+- Authorization headers
+- Seeded test data
+- Clean, readable test suites
+
+## CI/CD Pipeline
+
+The project integrates GitHub Actions to:
+
+- Run tests automatically on every push
+- Inject secrets securely (JWT_SECRET)
+- Prevent deployments if tests fail
+- Deploy safely to a VPS via SSH
+
+This guarantees continuous quality enforcement and safe delivery.
